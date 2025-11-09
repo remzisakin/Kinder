@@ -1,0 +1,43 @@
+name: Patch Kinder Backend
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run patch script
+        shell: bash
+        run: |
+          chmod +x scripts/fix-kinder.sh
+          scripts/fix-kinder.sh
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "fix: run backend on macOS (prisma arrays → JSON, tsx dev)"
+          commit-message: "fix(backend): SQLite array fields → JSON; dev script → tsx; add migration"
+          body: |
+            ### What
+            - Convert `photos` and `interests` from `String[]` to `Json` in `prisma/schema.prisma` (SQLite doesn’t support primitive arrays).
+            - Add `tsx` and set `scripts.dev = "tsx watch src/server.ts"` to avoid ESM/CJS issues with ts-node-dev.
+            - Run `prisma generate` and create migration `fix_arrays`.
+            - Run `prisma db seed` if present.
+
+            ### Why
+            Fixes Prisma P1012 and “Must use import to load ES Module” errors on macOS.
+
+          branch: chore/kinder-fix-json-and-tsx
+          delete-branch: true
