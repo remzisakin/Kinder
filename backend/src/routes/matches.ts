@@ -14,10 +14,7 @@ router.get('/', async (req, res) => {
   try {
     const matches = await prisma.match.findMany({
       where: {
-        OR: [
-          { userAId: userId },
-          { userBId: userId },
-        ],
+        OR: [{ userAId: userId }, { userBId: userId }],
       },
       include: {
         userA: true,

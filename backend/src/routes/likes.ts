@@ -37,7 +37,8 @@ router.post('/', async (req, res) => {
       return res.status(201).json({ like, matched: false });
     }
 
-    const [userAId, userBId] = fromUserId < toUserId ? [fromUserId, toUserId] : [toUserId, fromUserId];
+    const [userAId, userBId] =
+      fromUserId < toUserId ? [fromUserId, toUserId] : [toUserId, fromUserId];
 
     const match = await prisma.match.upsert({
       where: {
@@ -57,33 +58,32 @@ router.post('/', async (req, res) => {
       },
     });
 
-    notifyMatchCreated(
-      [match.userAId],
-      {
-        matchId: match.id,
-        otherUser: {
-          id: match.userB.id,
-          name: match.userB.name,
-          photos: match.userB.photos,
-        },
+    notifyMatchCreated([match.userAId], {
+      matchId: match.id,
+      otherUser: {
+        id: match.userB.id,
+        name: match.userB.name,
+        photos: match.userB.photos,
       },
-    );
+    });
 
-    notifyMatchCreated(
-      [match.userBId],
-      {
-        matchId: match.id,
-        otherUser: {
-          id: match.userA.id,
-          name: match.userA.name,
-          photos: match.userA.photos,
-        },
+    notifyMatchCreated([match.userBId], {
+      matchId: match.id,
+      otherUser: {
+        id: match.userA.id,
+        name: match.userA.name,
+        photos: match.userA.photos,
       },
-    );
+    });
 
     return res.status(201).json({ like, matched: true, matchId: match.id });
   } catch (error: unknown) {
-    if (typeof error === 'object' && error && 'code' in error && (error as { code: string }).code === 'P2002') {
+    if (
+      typeof error === 'object' &&
+      error &&
+      'code' in error &&
+      (error as { code: string }).code === 'P2002'
+    ) {
       return res.status(409).json({ message: 'Bu kullanıcıyı zaten beğendiniz.' });
     }
 
