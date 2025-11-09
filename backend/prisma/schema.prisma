@@ -1,0 +1,57 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String
+  age        Int
+  gender     String
+  bio        String
+  photos     String[]
+  interests  String[]
+  createdAt  DateTime @default(now())
+  likesFrom  Like[]   @relation("LikesFrom")
+  likesTo    Like[]   @relation("LikesTo")
+  matchesA   Match[]  @relation("MatchesA")
+  matchesB   Match[]  @relation("MatchesB")
+  messages   Message[]
+}
+
+model Like {
+  id         Int      @id @default(autoincrement())
+  fromUser   User     @relation("LikesFrom", fields: [fromUserId], references: [id])
+  fromUserId Int
+  toUser     User     @relation("LikesTo", fields: [toUserId], references: [id])
+  toUserId   Int
+  createdAt  DateTime @default(now())
+
+  @@unique([fromUserId, toUserId])
+}
+
+model Match {
+  id        Int      @id @default(autoincrement())
+  userA     User     @relation("MatchesA", fields: [userAId], references: [id])
+  userAId   Int
+  userB     User     @relation("MatchesB", fields: [userBId], references: [id])
+  userBId   Int
+  createdAt DateTime @default(now())
+  messages  Message[]
+
+  @@unique([userAId, userBId])
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  match     Match    @relation(fields: [matchId], references: [id])
+  matchId   Int
+  sender    User     @relation(fields: [senderId], references: [id])
+  senderId  Int
+  text      String
+  createdAt DateTime @default(now())
+}
